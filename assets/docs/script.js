@@ -15,9 +15,22 @@
 // // Create a variable to reference the database
 // const database = firebase.database();
 
+// function: sort trains by arrival time
+function compare(a, b) {
+  const arrivalA = a.nextArrivalVar;
+  const arrivalB = b.nextArrivalVar;
+
+  if (arrivalA > arrivalB) {
+    return 1;
+  } else if (arrivalA < arrivalB) {
+    return -1;
+  }
+  else return 0;
+}
+
 
 // function: input train frequency and first arrival, calculate next arrival
-const nextArrivalFromFrequency = function(trainInterval, initialTime) {
+const nextArrivalFromFrequency = function (trainInterval, initialTime) {
   // momentJS: find current time (for dryness probably can fold this in with the clock update)
   // subtract initialTime from current time
   // divide result by trainInterval
@@ -26,60 +39,83 @@ const nextArrivalFromFrequency = function(trainInterval, initialTime) {
 }
 
 // function: add train data. TODO: make this a nameless onclick event on the submit button
-const pushNewTrainToServer = function() {
+$('#registerButton').on('click', () => {
+  event.preventDefault(); // don't reload the page
   // get form input
+
+    let currentName = $('#trainNameInput').val().trim();
+    let currentNumber = parseInt( $('#trainNumberInput').val() ); // parseInt isn't necessary but i like it for readability
+    let currentInterval = $('#trainFrequencyInput').val();
+    let currentArrival = $('#trainArrivalInput').val();
+
+    // make sure currentInterval is in minutes
+    if (currentInterval.includes(':')){
+      // some fancy moment.js to make currentInterval = number of minutes (make sure it's a number not a string)
+    }
+
   // push to firebase
   // call pullTrainsFromServer()
-}
+  populateTableRow(9, currentNumber, currentName, currentInterval, currentArrival);
+});
+
 
 // function to populate table row from data. separated from data calls for readability
-const populateTableRow = function(index, lineNumber, lineName, lineInterval, nextArrival){
+const populateTableRow = function (index, lineNumber, lineName, lineInterval, nextArrival) {
   let rowDiv = $('<tr>'); // make a table row
   rowDiv.attr('trainIndex', index); // give it the property trainIndex with value i
 
-  let thDiv = $('<th scope="row">') // make the first column
-               .text(lineNumber); // give it the line number
+  let thDiv = $(`<th scope="row" trainIndex="${index}">`) // make the first column
+    .text(lineNumber); // give it the line number
   rowDiv.append(thDiv);
   let tdDiv1 = $('<td>') // next column, line name
-                .text(lineName);
+    .text(lineName);
   rowDiv.append(tdDiv1);
   let tdDiv2 = $('<td>') // next column, arrival interval
-                .text(`${lineInterval} minutes`);
+    .text(`${lineInterval} minutes`);
   rowDiv.append(tdDiv2);
   let tdDiv3 = $('<td>') // next column, next arrival time
-                .text(nextArrival);
+    .text(nextArrival);
   rowDiv.append(tdDiv3);
   let tdDiv4 = $('<td>') // next column, remove button
-                .html(`<button class="removeBtn" trainIndex="${index}">remove</button></td>`);
+    .html(`<button class="removeBtn" trainIndex="${index}">remove</button></td>`);
   rowDiv.append(tdDiv4);
-  $('#tableAnchorDiv').append(rowDiv);
+  $('#tableAnchorDiv').append(rowDiv); // attach the whole thing to the table
 
 }
 
 // function: grab data from firebase
-const pullTrainsFromServer = function() {
+const pullTrainsFromServer = function () {
   // clear the whole table div first so we don't end up cloning it repeatedly
   $('#tableAnchorDiv').empty();
-
-  // each train will be an object with properties {'lineName', 'trainFrequency', 'firstArrival'}
+  let trainSortArray = []; // temporary array, used to sort trains by arrival order
   // loop through the objects on the server
-  for (let i = 0; i < number; i++){
+  for (let i = 0; i < number; i++) {
     // get the variables
+    // (call nextArrivalFromFrequency('trainFrequency','firstArrival'), store it as nextArrivalVar)
     let lineNumberVar;
     let lineNameVar;
     let lineIntervalVar;
     let nextArrivalVar;
-    
+    // create a train object with appropriate keys & push to trainSortArray
+    trainSortArray.push({
+      lineNumber: lineNumberVar,
+      lineName: lineNameVar,
+      lineInterval: lineIntervalVar,
+      nextArrival, nextArrivalVar
+    });
+  }
 
-  // call nextArrivalFromFrequency('trainFrequency','firstArrival'), store it as nextArrivalVar
-  // make a row for this train
-  populateTableRow(i, lineNumberVar, lineNameVar, lineIntervalVar, nextArrivalVar);
-
+  // once array is populated with all trains, sort it
+  trainSortArray.sort(compare);
+  // then loop through the sorted array and print each line
+  for (let j = 0; j < trainSortArray.length; j++) {
+    populateTableRow(j, trainSortArray[j].lineNumber, trainSortArray[j].lineName, trainSortArray[j].lineInterval, trainSortArray[j].nextArrival);
   }
 }
 
+
 // function: update the clock in the jumbotron every minute
-const updateJumboClock = function() {
+const updateJumboClock = function () {
   // use momentJS to grab current time
   // use jquery to print it to the jumbotron div
 }
@@ -87,16 +123,19 @@ const updateJumboClock = function() {
 // function: interval to call updateJumboClock & pullTrainsFromServer every minute
 
 // function: remove line from table & firebase on button click
-const removeTrainLine = function() {
-  // we set the trainIndex attribute on the row div upon table population; it corresponds
-  //   to the train's position in the firebase object.
+const removeTrainLine = function () {
   let indexVar = $(this).attr('trainIndex'); // first pull index from button
+  
+  // turn the variable into a string jQuery understands to pull the number for firebase search
+  indexVar = `th[trainIndex=${indexVar}]`
+  let trainNumberToRemove = parseInt( $(indexVar).text() );
+  console.log(`train to remove: ${trainNumberToRemove}`);
 
   // find corresponding entry on firebase and remove it
 
-  // turn the variable into a string jQuery understands and use that to kill the correct row
+  // shorten the variable to catch the row head & use that to kill the correct row
   //   (once the table population function is up, we can just repopulate from firebase instead)
-  indexVar = `[trainIndex=${indexVar}]`;
+  indexVar = indexVar.slice(2); // (is now just [trainIndex=#])
   $(indexVar).remove();
 } // and connect this function to the buttons themselves
 $(document).on('click', '.removeBtn', removeTrainLine);
