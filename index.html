@@ -10,22 +10,54 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
     integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="./assets/docs/style.css">
-  
+
   <title>Train Schedules</title>
 
 </head>
 
 <body>
 
-    <!-- jumbotron title -->
-        <!-- current time -->
-    <!-- table anchor -->
-        <!-- line name / frequency / next arrival time -->
-    <!-- form element -->
-        <!-- new train name -->
-        <!-- new train frequency: input lock this to correct format -->
-        <!-- new train departure: again, validate format -->
-        <!-- submit button -->
+  <!-- jumbotron title -->
+  <div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      <!-- current time -->
+      <h1 id="jumboTimeAnchorDiv"></h1>
+    </div>
+  </div>
+  <!-- table anchor -->
+  <div class="container">
+    <div id="trainTableAnchorDiv"></div>
+    <!-- line name / frequency / next arrival time -->
+  </div>
+  <!-- form element -->
+  <div class="container" id="formDiv">
+    <form>
+      <div class="form-row">
+        <div class="col-md-6">
+          <!-- new train name -->
+          <label for="trainNameInput">New train line</label>
+          <input type="text" class="form-control" id="trainNameInput" placeholder="Red Line">
+        </div>
+        <div class="col-md-3">
+          <!-- new train frequency: format validated -->
+          <label for="trainFrequencyInput">Train frequency</label>
+          <input type="text" class="form-control" id="trainFrequencyInput" placeholder="HH:MM">
+        </div>
+        <div class="col-md-3">
+          <!-- new train departure: again, validated format -->
+          <label for="trainArrivalInput">Initial departure time</label>
+          <input type="text" class="form-control" id="trainArrivalInput" placeholder="HH:MM">
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-sm-10">
+          <!-- submit button -->
+          </br>
+          <button type="submit" class="btn btn-primary">Register</button>
+        </div>
+      </div>
+    </form>
+  </div>
 
 </body>
 
