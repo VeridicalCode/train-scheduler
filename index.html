@@ -21,13 +21,42 @@
   <div class="jumbotron jumbotron-fluid">
     <div class="container">
       <!-- current time -->
-      <h1 id="jumboTimeAnchorDiv"></h1>
+      <h1 id="jumboTimeAnchorDiv">TI:ME</h1>
     </div>
   </div>
   <!-- table anchor -->
   <div class="container">
-    <div id="trainTableAnchorDiv"></div>
     <!-- line name / frequency / next arrival time -->
+    <table class="table table-striped table-sm">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Line #</th>
+            <th scope="col">Line Name</th>
+            <th scope="col">Frequency</th>
+            <th scope="col">Next Arrival</th>
+          </tr>
+        </thead>
+        <tbody id="tableAnchorDiv">
+          <tr>
+            <th scope="row">115</th>
+            <td>Rivendell Racer</td>
+            <td>42 minutes</td>
+            <td>12:44</td>
+          </tr>
+          <tr>
+            <th scope="row">72</th>
+            <td>November Special</td>
+            <td>76 minutes</td>
+            <td>1:00</td>
+          </tr>
+          <tr>
+            <th scope="row">90</th>
+            <td>Local 90</td>
+            <td>24 minutes</td>
+            <td>12:38</td>
+          </tr>
+        </tbody>
+      </table>
   </div>
   <!-- form element -->
   <div class="container" id="formDiv">
@@ -50,6 +79,12 @@
           <!-- new train departure: again, validated format -->
           <label for="trainArrivalInput">Initial departure time</label>
           <input type="text" class="form-control" id="trainArrivalInput" placeholder="HH:MM" required pattern="\d{1,2}:\d{2}" minlength="4" maxlength="5">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="col-2">
+          <label for="trainNumberInput">Line Number</label>
+          <input type="text" class="form-control" id="trainNumberInput" placeholder="##" required type="number" minlength="1" maxlength="3">
         </div>
       </div>
       <div class="form-group row">
