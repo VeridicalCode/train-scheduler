@@ -2,3 +2,10 @@
 #formDiv{
   padding: 10vw;
 }
+
+:valid{
+  border-color: black;
+}
+:invalid{
+  border-color: red;
+}

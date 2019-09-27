@@ -31,22 +31,25 @@
   </div>
   <!-- form element -->
   <div class="container" id="formDiv">
+    <h3>Add a new train</h3>
+    <div>All initial departures must be in 24-hour time.</div>
+  <hr/>
     <form>
       <div class="form-row">
         <div class="col-md-6">
           <!-- new train name -->
           <label for="trainNameInput">New train line</label>
-          <input type="text" class="form-control" id="trainNameInput" placeholder="Red Line">
+          <input type="text" class="form-control" id="trainNameInput" placeholder="Red Line" required>
         </div>
         <div class="col-md-3">
           <!-- new train frequency: format validated -->
           <label for="trainFrequencyInput">Train frequency</label>
-          <input type="text" class="form-control" id="trainFrequencyInput" placeholder="HH:MM">
+          <input type="text" class="form-control" id="trainFrequencyInput" placeholder="H:MM" required pattern="\d{1}:\d{2}|\d{2}" minlength="2" maxlength="4">
         </div>
         <div class="col-md-3">
           <!-- new train departure: again, validated format -->
           <label for="trainArrivalInput">Initial departure time</label>
-          <input type="text" class="form-control" id="trainArrivalInput" placeholder="HH:MM">
+          <input type="text" class="form-control" id="trainArrivalInput" placeholder="HH:MM" required pattern="\d{1,2}:\d{2}" minlength="4" maxlength="5">
         </div>
       </div>
       <div class="form-group row">
