@@ -30,12 +30,43 @@ function compare(a, b) {
 
 
 // function: input train frequency and first arrival, calculate next arrival
-const nextArrivalFromFrequency = function (trainInterval, initialTime) {
-  // momentJS: find current time (for dryness probably can fold this in with the clock update)
+function nextArrivalFromFrequency(trainInterval, initialTime) {
+  console.log(`current time reads as ${moment()}`);
+
+  if (initialTime.length === 4){
+    initialTime = '0'+initialTime;
+    console.log(`initial time in 24hr: ${initialTime}`);
+  }
+  let initialHours = initialTime.slice(0,2);
+  let initialMinutes = initialTime.slice(3);
+  console.log(`initial time sliced into ${initialHours} : ${initialMinutes}`);
+  let startTime = moment().hours(initialHours).minutes(initialMinutes);
+  console.log(`initial departure reads as ${startTime}`);
+
   // subtract initialTime from current time
+  let currentTimeDelta = moment().diff(startTime, 'minutes');
+  console.log(`initial subtraction function returned ${currentTimeDelta}`);
   // divide result by trainInterval
+
   // if %=0, return "HERE"
+  if (parseInt(currentTimeDelta) % trainInterval === 0){
+    console.log(`timeDelta lined up perfectly with train frequency`);
+    return `HERE`;
+  }
+  else{
+    console.log(`timeDelta had a remainder`);
   // else floor(result)++, multiply by trainInterval, add to initialTime, return that
+    let workingInterval = Math.floor(parseInt(currentTimeDelta) / trainInterval);
+    console.log(`train has returned ${workingInterval} times since initial departure`);
+    workingInterval++;
+    workingInterval *= trainInterval;
+    console.log(`there are ${workingInterval} minutes between initial departure and next arrival`);
+    let workingArrival = moment(initialTime, ['mm:hh', 'm:hh']).add(workingInterval, ['mm','mmm'])
+    workingArrival = workingArrival.format('hh:mm');
+    console.log(`next arrival should be at ${workingArrival}`);
+    return workingArrival;
+    
+  }
 }
 
 // function: add train data. TODO: make this a nameless onclick event on the submit button
@@ -51,16 +82,19 @@ $('#registerButton').on('click', () => {
     // make sure currentInterval is in minutes
     if (currentInterval.includes(':')){
       // some fancy moment.js to make currentInterval = number of minutes (make sure it's a number not a string)
+      currentInterval = moment(currentInterval, ['mm:hh', 'm:hh']).format('mm');
+      currentInterval = parseInt(currentInterval);
     }
+    let calculatedArrival = nextArrivalFromFrequency(currentInterval, currentArrival);
 
   // push to firebase
   // call pullTrainsFromServer()
-  populateTableRow(9, currentNumber, currentName, currentInterval, currentArrival);
+  populateTableRow(9, currentNumber, currentName, currentInterval, calculatedArrival);
 });
 
 
 // function to populate table row from data. separated from data calls for readability
-const populateTableRow = function (index, lineNumber, lineName, lineInterval, nextArrival) {
+function populateTableRow (index, lineNumber, lineName, lineInterval, nextArrival) {
   let rowDiv = $('<tr>'); // make a table row
   rowDiv.attr('trainIndex', index); // give it the property trainIndex with value i
 
@@ -84,12 +118,12 @@ const populateTableRow = function (index, lineNumber, lineName, lineInterval, ne
 }
 
 // function: grab data from firebase
-const pullTrainsFromServer = function () {
+function pullTrainsFromServer () {
   // clear the whole table div first so we don't end up cloning it repeatedly
   $('#tableAnchorDiv').empty();
   let trainSortArray = []; // temporary array, used to sort trains by arrival order
   // loop through the objects on the server
-  for (let i = 0; i < number; i++) {
+  for (let i = 0; i < 4; i++) {
     // get the variables
     // (call nextArrivalFromFrequency('trainFrequency','firstArrival'), store it as nextArrivalVar)
     let lineNumberVar;
@@ -115,9 +149,11 @@ const pullTrainsFromServer = function () {
 
 
 // function: update the clock in the jumbotron every minute
-const updateJumboClock = function () {
+function updateJumboClock () {
   // use momentJS to grab current time
+  let currentTime = moment().format('hh:mm');
   // use jquery to print it to the jumbotron div
+  $('#jumboTimeAnchorDiv').text(currentTime);
 }
 
 // function: interval to call updateJumboClock & pullTrainsFromServer every minute
@@ -141,3 +177,6 @@ const removeTrainLine = function () {
 $(document).on('click', '.removeBtn', removeTrainLine);
 
 populateTableRow(3, 744, 'Whiterun Express', 59, '1:01');
+
+const updateEveryMinute = setInterval( updateJumboClock, 60000);
+
