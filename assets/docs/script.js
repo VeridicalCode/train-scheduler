@@ -33,37 +33,31 @@ function compare(a, b) {
 function nextArrivalFromFrequency(trainInterval, initialTime) {
   console.log(`current time reads as ${moment()}`);
 
-  if (initialTime.length === 4){
+  if (initialTime.length === 4){ // normalize time string
     initialTime = '0'+initialTime;
     console.log(`initial time in 24hr: ${initialTime}`);
   }
+  // separate minutes and hours to feed back to moment() since it doesn't seem to like the string as-is
   let initialHours = initialTime.slice(0,2);
   let initialMinutes = initialTime.slice(3);
-  console.log(`initial time sliced into ${initialHours} : ${initialMinutes}`);
   let startTime = moment().hours(initialHours).minutes(initialMinutes);
-  console.log(`initial departure reads as ${startTime}`);
 
   // subtract initialTime from current time
   let currentTimeDelta = moment().diff(startTime, 'minutes');
   console.log(`initial subtraction function returned ${currentTimeDelta}`);
-  // divide result by trainInterval
 
+  // divide result by trainInterval
   // if %=0, return "HERE"
   if (parseInt(currentTimeDelta) % trainInterval === 0){
-    console.log(`timeDelta lined up perfectly with train frequency`);
     return `HERE`;
   }
   else{
-    console.log(`timeDelta had a remainder`);
   // else floor(result)++, multiply by trainInterval, add to initialTime, return that
-    let workingInterval = Math.floor(parseInt(currentTimeDelta) / trainInterval);
-    console.log(`train has returned ${workingInterval} times since initial departure`);
-    workingInterval++;
-    workingInterval *= trainInterval;
-    console.log(`there are ${workingInterval} minutes between initial departure and next arrival`);
-    let workingArrival = moment(initialTime, ['mm:hh', 'm:hh']).add(workingInterval, ['mm','mmm'])
-    workingArrival = workingArrival.format('hh:mm');
-    console.log(`next arrival should be at ${workingArrival}`);
+    let workingInterval = Math.floor(parseInt(currentTimeDelta) / trainInterval); // arrivals since initial departure
+    workingInterval++; // the number of arrivals that will have happened at next arrival
+    workingInterval *= trainInterval; // arrivals * arrival interval = minutes from first arrival to upcoming arrival
+    let workingArrival = startTime.add(workingInterval, 'minutes') // add that to the departure time
+    workingArrival = workingArrival.format('hh:mm'); // format properly
     return workingArrival;
     
   }
