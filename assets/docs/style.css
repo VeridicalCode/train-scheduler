@@ -1,6 +1,26 @@
 
+h1{
+  text-align: center;
+  font-size: 5em;
+}
+
 #formDiv{
   padding: 10vw;
+}
+
+@keyframes blurb {
+  /* 0%   {color: blueviolet; left:0px}
+  50%  {color: blue; right: 200px;}
+  100% {color: black; left: 0px;} */
+  0% {color:rgba(0, 0, 0, 0); left:0px; top:0px;}
+  100% {color:blueviolet; left:160px; top:0px;}
+}
+
+#trainblurb{
+  position: relative;
+  animation-name: blurb;
+  animation-duration: 22s;
+  animation-iteration-count: infinite;
 }
 
 :valid{

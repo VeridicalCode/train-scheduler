@@ -18,10 +18,16 @@ const trainTable = database.ref('trainTable');
 
 // function: compare that allows to sort trains by arrival time
 function compare(a, b) {
-  const arrivalA = a.nextArrivalVar;
-  const arrivalB = b.nextArrivalVar;
+  const arrivalA = a.nextArrival;
+  const arrivalB = b.nextArrival;
 
-  if (arrivalA > arrivalB) {
+  if (arrivalA == 'HERE') {
+    return -2;
+  }
+  else if (arrivalB == 'HERE') {
+    return 2;
+  }
+  else if (arrivalA > arrivalB) {
     return 1;
   } else if (arrivalA < arrivalB) {
     return -1;
@@ -29,10 +35,8 @@ function compare(a, b) {
   else return 0;
 }
 
-
 // function: input train frequency and first arrival, calculate next arrival
 function nextArrivalFromFrequency(trainInterval, initialTime) {
-
   if (initialTime.length === 4) { // normalize time string to 24h
     initialTime = '0' + initialTime;
   }
@@ -60,23 +64,41 @@ function nextArrivalFromFrequency(trainInterval, initialTime) {
   }
 }
 
+// function: check to make sure train index is unique
+function isAUniqueLineNumber(numberToCheck){
+  let localBoolean = true; // assume number is unique
+  $('.removeBtn').each(function(){ // check all the local buttons, easier than pinging server
+    takenIndex = $(this).attr('trainIndex');
+    if (takenIndex == numberToCheck){
+      localBoolean = false; // they match OH NO, flip boolean
+    }
+  })
+  return localBoolean;
+}
+
 // function: add train data from form on click of register
 $('#registerButton').on('click', () => {
   event.preventDefault(); // don't reload the page
+  
   // get form input
-
   let currentName = $('#trainNameInput').val().trim();
-  let currentNumber = parseInt($('#trainNumberInput').val()); // parseInt isn't really necessary but i like it for safety
+  let currentNumber = parseInt($('#trainNumberInput').val()); // parseInt isn't really necessary but is tighter
   let currentInterval = $('#trainFrequencyInput').val();
   let currentArrival = $('#trainArrivalInput').val();
+  
+  // don't waste any more time if the number isn't unique
+  if (!isAUniqueLineNumber(currentNumber)){
+    alert(`Line numbers must be unique!`);
+    return;
+  }
 
   // make sure currentInterval is in minutes
   if (currentInterval.includes(':')) {
     // some fancy moment.js to make currentInterval = number of minutes (make sure it's a number not a string)
-    currentInterval = moment(currentInterval, ['mm:hh', 'm:hh']).format('mm');
-    currentInterval = parseInt(currentInterval);
+    currentInterval = moment.duration(currentInterval).asMinutes();
   }
-  let calculatedArrival = nextArrivalFromFrequency(currentInterval, currentArrival);
+  currentInterval = parseInt(currentInterval); // again, parseInt isn't strictly necessary but we stand on principle here
+
   // clear form values
   $('#trainNameInput').val('Red Line');
   $('#trainNumberInput').val('##');
@@ -91,12 +113,12 @@ $('#registerButton').on('click', () => {
   }, function(error) { // throw errors to console
     if (error) console.log(`Firebase write error: ${error}`);
   });
-  populateTableRow(currentNumber, currentName, currentInterval, calculatedArrival);
+  // populateTableRow(currentNumber, currentName, currentInterval, calculatedArrival);
 
 });
 
 
-// function to populate table row from data. separated from data calls for readability
+// function to populate table row from data. separated from data calls for readability and easy iteration
 function populateTableRow(lineNumber, lineName, lineInterval, nextArrival) {
   let rowDiv = $('<tr>'); // make a table row
   rowDiv.attr('trainIndex', lineNumber); // give it the line number as an index so we can kill it if needed
@@ -120,37 +142,38 @@ function populateTableRow(lineNumber, lineName, lineInterval, nextArrival) {
 
 }
 
-// function: grab data from firebase
-function pullTrainsFromServer() {
-  // clear the whole table div first so we don't end up cloning it repeatedly
-  $('#tableAnchorDiv').empty();
+// function: grab data from firebase. there's no simple way to do this on command; firebase wants to decide when to call it on its own, so we just let it fire by itself whenver the user updates anything (ie, adds or deletes a train)
+// function pullTrainsFromServer() { 
+trainTable.on('value', (snapshot) => {
+
   let trainSortArray = []; // temporary array, used to sort trains by arrival order
-  // loop through the objects on the server
-  
-  for (let i = 0; i < 4; i++) {
+  let tableSnap = snapshot.val(); // store table object from server
+  // loop through the objects within the object
+  $.each(tableSnap, function(key, subKey) {
+    if (key == 00) return; // skip the dummy line
     // get the variables
-    // (call nextArrivalFromFrequency('trainFrequency','firstArrival'), store it as nextArrivalVar)
-    let lineNumberVar;
-    let lineNameVar;
-    let lineIntervalVar;
-    let nextArrivalVar;
+    let lineNumberVar = key;
+    let lineNameVar = subKey.trainName;
+    let lineIntervalVar = subKey.trainInterval;
+    let nextArrivalVar = nextArrivalFromFrequency(lineIntervalVar, subKey.firstDeparture);
+    
     // create a train object with appropriate keys & push to trainSortArray
     trainSortArray.push({
       lineNumber: lineNumberVar,
       lineName: lineNameVar,
       lineInterval: lineIntervalVar,
-      nextArrival, nextArrivalVar
+      nextArrival: nextArrivalVar
     });
-  }
+  })
 
   // once array is populated with all trains, sort it
   trainSortArray.sort(compare);
+  $('#tableAnchorDiv').empty(); // clear the whole table div so we don't end up cloning it repeatedly
   // then loop through the sorted array and print each line
   for (let j = 0; j < trainSortArray.length; j++) {
     populateTableRow(trainSortArray[j].lineNumber, trainSortArray[j].lineName, trainSortArray[j].lineInterval, trainSortArray[j].nextArrival);
   }
-}
-
+});
 
 // function: update the clock in the jumbotron every minute
 function updateJumboClock() {
@@ -158,8 +181,10 @@ function updateJumboClock() {
   let currentTime = moment().format('hh:mm');
   // use jquery to print it to the jumbotron div
   $('#jumboTimeAnchorDiv').text(currentTime);
+  // fire a dummy update to firebase to proc table reset. a wildly hacky workaround to meet the requirement of using firebase realtime database instead of traditional cloud server storage or server-side node scripting.
+  database.ref(`/trainTable/00`).set({nullvalue: currentTime});
 }
-
+updateJumboClock(); // run once on pageload to set initial time
 
 // function: remove line from table & firebase on button click
 const removeTrainLine = function () {
@@ -177,8 +202,5 @@ const removeTrainLine = function () {
 } // and connect this function to the buttons themselves
 $(document).on('click', '.removeBtn', removeTrainLine);
 
-populateTableRow(744, 'Whiterun Express', 59, '1:01');
-
 // function: interval to call updateJumboClock & pullTrainsFromServer every minute
 const updateEveryMinute = setInterval(updateJumboClock, 60000);
-
