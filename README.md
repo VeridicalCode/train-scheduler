@@ -13,4 +13,5 @@ Simply navigating to the webpage will automatically load any existing trains and
 All local code was written solely by myself, Mars Getsoian. JQuery, Moment.js, and Bootstrap are the product of their respective communities, and the Firebase server service is provided by Google.
 
 ## Are There Bugs?
-A single known bug exists with the sorting function around noon and midnight, when trains scheduled to arrive after 1:00 sort higher than trains arriving earlier at times with higher numbers (generally 11-12). The solution is known and will be implemented in any further patches.
+* An issue exists with the sorting function around noon and midnight, when trains scheduled to arrive after 1:00 sort higher than trains arriving earlier at times with higher numbers (generally 11-12).
+* Some users have reported issues loading the page in non-Chrome browsers.
