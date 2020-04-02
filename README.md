@@ -1,5 +1,7 @@
 # Train Scheduler
 
+![Running the app](/assets/images/preview.jpg)
+
 ## What Is This Thing?
 This web app allows users to track and add train schedules. Simple JQuery scripting generates a table that shows all currently stored train lines, how often they arrive at station, and when they'll next arrive in realtime. Train information is stored on Firebase so it's acessible from anywhere, and users can add or remove lines from the display.
 
